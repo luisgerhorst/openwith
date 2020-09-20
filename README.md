@@ -63,6 +63,9 @@ make test
 
 ## Future Work
 
+- Implement that fulfills the following: We either want to open files or directories
+  - Certain files Emacs does not handle well (e.g. binary files for which the user has not specified a mode) should be opened in external programs by default. By default they should be opened with the program specified by the desktop environment (`xdg-open`, `open`, etc.). The user should also be able to open those files in a program he specified (either in their config or by calling a special function that presents them a list of programs that may be suitable, similar to their desktop environment).
+  - By default directories should be opened in dired. When the user calls a special command they can choose to open the directory in any other program (e.g. their file browser which we can do using `xdg-open` et al). They should also be able to open the file in a Terminal program (which may not be the default one).
 - Is it a problem that we may prevent the opening of arbitrary (possibly scripted) pdf files in Emacs?
 - [Fuco1/dired-hacks/dired-open.el](https://github.com/Fuco1/dired-hacks/blob/master/dired-open.el) has a nice system determining how to open files. It's tighlty integrated into the hooks he uses but if maybe we can reuse it with some work and replace `openwith-associations`.
 - How does it behave over SSH?
