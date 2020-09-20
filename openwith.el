@@ -1,10 +1,11 @@
 ;;; openwith.el --- Open files with external programs
 
 ;; Copyright (C) 2007  Markus Triska
+;; Copyright (C) 2020  Luis Gerhorst
 
 ;; Author: Markus Triska <markus.triska@gmx.at>
 ;; Keywords: files, processes
-;; URL: https://bitbucket.org/jpkotta/openwith
+;; URL: https://github.com/luisgerhorst/openwith
 ;; Version: 20120531
 
 ;; This file is free software; you can redistribute it and/or modify
