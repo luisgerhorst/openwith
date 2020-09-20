@@ -47,7 +47,13 @@ Install [cask](https://github.com/cask/cask), then:
 make all
 ```
 
-### Testing
+### Test Run
+
+``` shell
+cask emacs
+```
+
+### Test Config & Installation
 
 Load the example configuration into a vanilla instance of Emacs, this will install straight.el to `./example-config/straight`:
 
