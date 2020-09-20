@@ -60,3 +60,9 @@ Load the example configuration into a vanilla instance of Emacs, this will insta
 ``` shell
 make test
 ```
+
+## Future Work
+
+- Is it a problem that we may prevent the opening of arbitrary (possibly scripted) pdf files in Emacs?
+- [Fuco1/dired-hacks/dired-open.el](https://github.com/Fuco1/dired-hacks/blob/master/dired-open.el) has a nice system determining how to open files. It's tighlty integrated into the hooks he uses but if maybe we can reuse it with some work.
+- How does it behave over SSH?
