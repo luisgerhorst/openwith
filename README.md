@@ -32,15 +32,3 @@ To enable `openwith` automatically when the desktop environment is recognized, a
 (when openwith-desktop-environment-open
     (openwith-mode t))
 ```
-
-## Testing
-
-The following serves as documentation for contributors to easy development. If you just want to use this package as a end user this should not concern you.
-
-Load the example configuration into a vanilla instance of Emacs, this will install straight.el to `./example-config/straight`:
-
-``` shell
-make test
-```
-
-Refer to the `Makefile` for additional commands that may be useful.
