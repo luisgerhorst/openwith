@@ -44,9 +44,11 @@
   :group 'files
   :group 'processes)
 
-(defvar openwith-desktop-environment-open
+(defcustom openwith-desktop-environment-open
   (cond ((string-equal system-type "darwin") "open")
-        ((string-equal system-type "gnu/linux") "xdg-open")))
+        ((string-equal system-type "gnu/linux") "xdg-open"))
+  "Default program to be used when opening files that Emacs
+  usually does not handle well (e.g. media).")
 
 (defcustom openwith-associations
   (list (list "\\.pdf\\'" openwith-desktop-environment-open '(file))
