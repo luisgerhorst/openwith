@@ -32,13 +32,14 @@ To enable OpenWith automatically when the desktop environment is recognized, add
 (when openwith-desktop-environment-open
     (openwith-mode t))
 ```
-# Development
+
+## Development
 
 The following serves as documentation for contributors to easy development. If you just want to use this package as a end user this should not concern you.
 
 Refer to the `Makefile` for additional commands that may be useful.
 
-## Compile/Lint
+### Compile/Lint
 
 Install [cask](https://github.com/cask/cask), then:
 
@@ -46,7 +47,7 @@ Install [cask](https://github.com/cask/cask), then:
 make all
 ```
 
-## Testing
+### Testing
 
 Load the example configuration into a vanilla instance of Emacs, this will install straight.el to `./example-config/straight`:
 
