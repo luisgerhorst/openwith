@@ -74,14 +74,9 @@ string."
   disowned from the parent Emacs process.  If Emacs dies, the
   process spawned here lives on.  ARGLIST is a list of strings,
   each an argument to COMMAND."
-  (let ((shell-file-name "/bin/sh"))
-    (start-process-shell-command
-     "openwith-process" nil
-     (concat
-      "exec nohup " command " " 
-      (mapconcat 'shell-quote-argument arglist " ")
-      " >/dev/null"))
-     ))
+  (let ((process-connection-type nil))
+    (set-process-query-on-exit-flag
+     (apply #'start-process (append (list "openwith-process" nil "nohup" command) arglist)) nil)))
 
 (defun openwith-open-windows (file)
   "Run external command COMMAND, in such a way that it is
