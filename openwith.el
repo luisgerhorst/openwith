@@ -43,11 +43,15 @@
   :group 'files
   :group 'processes)
 
+(defvar openwith-desktop-environment-open
+  (cond ((string-equal system-type "darwin") "open")
+        ((string-equal system-type "gnu/linux") "xdg-open")))
+
 (defcustom openwith-associations
-  '(("\\.pdf\\'" "acroread" (file))
-    ("\\.mp3\\'" "xmms" (file))
-    ("\\.\\(?:mpe?g\\|avi\\|wmv\\)\\'" "mplayer" ("-idx" file))
-    ("\\.\\(?:jp?g\\|png\\)\\'" "display" (file)))
+  (list (list "\\.pdf\\'" openwith-desktop-environment-open '(file))
+        (list "\\.mp3\\'" openwith-desktop-environment-open '(file))
+        (list "\\.\\(?:mpe?g\\|avi\\|wmv\\)\\'" openwith-desktop-environment-open '(file))
+        (list "\\.\\(?:jp?g\\|png\\)\\'" openwith-desktop-environment-open '(file)))
   "Associations of file patterns to external programs.
 File pattern is a regular expression describing the files to
 associate with a program. The program arguments are a list of
