@@ -68,13 +68,13 @@ where the symbol 'file' is replaced by the file to be opened."
   :group 'openwith
   :type 'boolean)
 
-(defun openwith-make-extension-regexp (strings)
+(defun openwith--make-extension-regexp (strings)
   "Make a regexp that matches a string that starts with a '.',
 has any of the supplied STRINGS, and is at the end of the
 string."
   (concat "\\." (regexp-opt strings) "$"))
 
-(defun openwith-open-unix (command arglist)
+(defun openwith--open-unix (command arglist)
   "Run external command COMMAND, in such a way that it is
   disowned from the parent Emacs process.  If Emacs dies, the
   process spawned here lives on.  ARGLIST is a list of strings,
@@ -83,46 +83,69 @@ string."
     (set-process-query-on-exit-flag
      (apply #'start-process (append (list "openwith-process" nil "nohup" command) arglist)) nil)))
 
-(defun openwith-open-windows (file)
+(defun openwith--open-windows (file)
   "Run external command COMMAND, in such a way that it is
   disowned from the parent Emacs process.  If Emacs dies, the
   process spawned here lives on.  ARGLIST is a list of strings,
   each an argument to COMMAND."
   (w32-shell-execute "open" file))
 
-(defun openwith-file-handler (operation &rest args)
+(defvar openwith--inhibit-open nil
+  "When set, `openwith--open' does nothing.
+
+Used to force opening files in Emacs when a prefix argument (C-u) is
+passed to `openwith--find-file' (which replaces
+`dired-find-file').")
+
+(defun openwith--open (file)
+  "Return t if file was opened with an external program."
+  (unless openwith--inhibit-open
+    (let ((assocs openwith-associations)
+          oa)
+      (catch 'while-assocs-break
+        ;; do not use `dolist' here, since some packages (like cl)
+        ;; temporarily unbind it
+        (while assocs
+          (setq oa (car assocs)
+                assocs (cdr assocs))
+          (when (save-match-data (string-match (car oa) file))
+            (let ((params (mapcar (lambda (x) (if (eq x 'file) file x))
+                                  (nth 2 oa))))
+              (when (or (not openwith-confirm-invocation)
+                        (y-or-n-p (format "%s %s? " (cadr oa)
+                                          (mapconcat #'identity params " "))))
+	            (if (eq system-type 'windows-nt)
+		            (openwith--open-windows file)
+		          (openwith--open-unix (cadr oa) params))
+                (when (featurep 'recentf)
+                  (recentf-add-file file))
+                ;; inhibit further actions
+                (throw 'while-assocs-break t)))))))))
+
+(defun openwith--file-handler (operation &rest args)
   "Open file with external program, if an association is configured."
   (when (and openwith-mode (not (buffer-modified-p)) (zerop (buffer-size)))
-    (let ((assocs openwith-associations)
-          (file (car args))
-          oa)
-      ;; do not use `dolist' here, since some packages (like cl)
-      ;; temporarily unbind it
-      (while assocs
-        (setq oa (car assocs)
-              assocs (cdr assocs))
-        (when (save-match-data (string-match (car oa) file))
-          (let ((params (mapcar (lambda (x) (if (eq x 'file) file x))
-                                (nth 2 oa))))
-            (when (or (not openwith-confirm-invocation)
-                      (y-or-n-p (format "%s %s? " (cadr oa)
-                                        (mapconcat #'identity params " "))))
-	          (if (eq system-type 'windows-nt)
-		          (openwith-open-windows file)
-		        (openwith-open-unix (cadr oa) params))
-              (kill-buffer nil)
-              (when (featurep 'recentf)
-                (recentf-add-file file))
-              ;; inhibit further actions
-              (error "Opened %s in external program"
-                     (file-name-nondirectory file))))))))
+    (let ((file (car args)))
+      (when (openwith--open file)
+        (kill-buffer nil)
+        ;; inhibit further actions
+        (error "Opened %s in external program"
+               (file-name-nondirectory file)))))
   ;; when no association was found, relay the operation to other handlers
   (let ((inhibit-file-name-handlers
-         (cons 'openwith-file-handler
+         (cons 'openwith--file-handler
                (and (eq inhibit-file-name-operation operation)
                     inhibit-file-name-handlers)))
         (inhibit-file-name-operation operation))
     (apply operation args)))
+
+;;;###autoload
+(defun openwith--find-file (&optional prefix-arg)
+  (interactive "P")
+  (unless (let ((openwith--inhibit-open prefix-arg))
+            (openwith--open (ignore-errors (dired-get-file-for-visit))))
+    (let ((openwith--inhibit-open t))
+      (dired-find-file))))
 
 ;;;###autoload
 (define-minor-mode openwith-mode
@@ -131,12 +154,18 @@ string."
   :global t
   (if openwith-mode
       (progn
-        ;; register `openwith-file-handler' for all files
-        (put 'openwith-file-handler 'safe-magic t)
-        (put 'openwith-file-handler 'operations '(insert-file-contents))
-        (add-to-list 'file-name-handler-alist '("" . openwith-file-handler)))
+        ;; register `openwith--file-handler' for all files
+        (put 'openwith--file-handler 'safe-magic t)
+        (put 'openwith--file-handler 'operations '(insert-file-contents))
+        (add-to-list 'file-name-handler-alist '("" . openwith--file-handler))
+
+        ;; Directly hook into dired to catch prefix argument.
+        (require 'dired)
+        (define-key dired-mode-map [remap dired-find-file] #'openwith--find-file))
     (setq file-name-handler-alist
-          (delete '("" . openwith-file-handler) file-name-handler-alist))))
+          (delete '("" . openwith--file-handler) file-name-handler-alist))
+    (when (featurep 'dired)
+      (define-key dired-mode-map [remap dired-find-file] nil))))
 
 (provide 'openwith)
 
